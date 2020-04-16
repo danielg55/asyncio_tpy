@@ -20,13 +20,16 @@ class Socket(object):
         message = await self._reader.read(size)
         return message.decode()
 
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        print('Closing the connection...')
+    def close(self):
         self._writer.close()
 
     @property
     def addr(self) -> str:
         return self._writer.get_extra_info('peername')
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        print('Closing the connection...')
+        self.close()
