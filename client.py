@@ -1,19 +1,16 @@
 import asyncio
 
+from async_socket import Socket
+
 
 async def tcp_echo_client(message):
-    reader, writer = await asyncio.open_connection(
-        '127.0.0.1', 8888)
+    with await Socket.create('127.0.0.1', 8888) as socket:
+        print(f'Send: {message}')
+        await socket.send(message)
 
-    print(f'Send: {message}')
-    writer.write(message.encode())
-
-    data = await reader.read(100)
-    print(f'Received: {data.decode()}')
-
-    print('Closing the connection...')
-    writer.close()
+        data = await socket.recv(100)
+        print(f'Received: {data}')
 
 
 if __name__ == '__main__':
-    asyncio.run(tcp_echo_client('Hello World!'))
+    asyncio.run(tcp_echo_client('hey'))

@@ -1,24 +1,22 @@
 import asyncio
 
+from async_socket import Socket
+
 
 async def handle_echo(reader, writer):
-    data = await reader.read(100)
-    message = data.decode()
-    addr = writer.get_extra_info('peername')
+    with Socket(reader, writer) as socket:
+        message = await socket.recv(100)
+        print(f"Received {message} from {socket.addr}")
 
-    print(f"Received {message!r} from {addr!r}")
+        print('sleeping...')
+        await asyncio.sleep(1)
 
-    print(f"Send: {message!r}")
-    writer.write(data)
-    await writer.drain()
-
-    print("Close the connection")
-    writer.close()
+        print(f"Send: {message!r}")
+        await socket.send(message)
 
 
 async def main():
-    server = await asyncio.start_server(
-        handle_echo, '127.0.0.1', 8888)
+    server = await asyncio.start_server(handle_echo, '127.0.0.1', 8888)
 
     addr = server.sockets[0].getsockname()
     print(f'Serving on {addr}')
@@ -27,4 +25,5 @@ async def main():
         await server.serve_forever()
 
 
-asyncio.run(main())
+if __name__ == '__main__':
+    asyncio.run(main())
